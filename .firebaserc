@@ -1,6 +1,7 @@
 {
-  "_comment": "Bind to your Firebase project at M6: replace PROJECT_ID, then `firebase use --add`.",
   "projects": {
-    "default": "PROJECT_ID"
-  }
+    "default": "bva-appsumo"
+  },
+  "targets": {},
+  "etags": {}
 }
