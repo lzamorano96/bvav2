@@ -98,8 +98,11 @@ function coerce(raw, rule) {
 }
 
 function checkRange(value, rule) {
-  if (rule.min !== undefined && value < rule.min) return `Must be ≥ ${rule.min}.`;
-  if (rule.max !== undefined && value > rule.max) return `Must be ≤ ${rule.max}.`;
+  // Percent fields store fractional values (0.15) but users think in percent (15%),
+  // so express range limits in percent for a clear message.
+  const fmt = (n) => (rule.type === 'percent' ? `${+(n * 100).toFixed(2)}%` : `${n}`);
+  if (rule.min !== undefined && value < rule.min) return `Must be ≥ ${fmt(rule.min)}.`;
+  if (rule.max !== undefined && value > rule.max) return `Must be ≤ ${fmt(rule.max)}.`;
   return null;
 }
 

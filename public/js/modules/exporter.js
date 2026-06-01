@@ -25,8 +25,10 @@ export function initExport(getInputs) {
   if (!btn) return;
   const menu = buildMenu(btn);
 
-  btn.addEventListener('click', (e) => { e.stopPropagation(); toggle(menu); });
-  document.addEventListener('click', () => close(menu));
+  const sync = () => btn.setAttribute('aria-expanded', String(!menu.hidden));
+  btn.addEventListener('click', (e) => { e.stopPropagation(); toggle(menu); sync(); });
+  document.addEventListener('click', () => { close(menu); sync(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { close(menu); sync(); btn.focus(); } });
   menu.addEventListener('click', (e) => e.stopPropagation());
 
   menu.querySelector('[data-action="print"]').addEventListener('click', () => { close(menu); window.print(); });
@@ -43,7 +45,16 @@ export function initExport(getInputs) {
 export function encodeStateToUrl(inputs) {
   const p = new URLSearchParams();
   FIELDS.forEach((k) => { if (inputs && inputs[k] != null) p.set(k, inputs[k]); });
+  const partner = document.getElementById('partner-input')?.value.trim();
+  if (partner) p.set('partner', partner);
   return `${location.origin}${location.pathname}#${p.toString()}`;
+}
+
+/** Read the partner name from the URL hash (if a shared link carried one). */
+export function decodePartnerFromUrl() {
+  const hash = location.hash.replace(/^#/, '');
+  if (!hash) return null;
+  return new URLSearchParams(hash).get('partner');
 }
 
 /** Parse inputs from the URL hash; returns a values map or null if absent. */

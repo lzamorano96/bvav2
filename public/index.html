@@ -17,21 +17,24 @@
     <div class="brand">
       <span class="brand__mark">AppSumo</span>
       <span class="brand__title">Business Value Assessment</span>
-      <span class="brand__partner" id="partner-name">— Partner</span>
+      <span class="brand__sep" aria-hidden="true">—</span>
+      <input type="text" id="partner-input" class="brand__partner-input"
+             placeholder="Add partner name" aria-label="Partner name" maxlength="60" />
     </div>
     <div class="header-actions">
       <label class="preset">
         Scenario
         <select id="preset-select" aria-label="Load preset scenario"></select>
       </label>
-      <button type="button" id="btn-export" class="btn btn--ghost" title="Export (M5)">Export ⤓</button>
+      <button type="button" id="btn-export" class="btn btn--ghost"
+              aria-haspopup="true" aria-expanded="false" title="Export options">Export ⤓</button>
     </div>
   </header>
 
   <main class="app-grid">
 
     <!-- Full-width headline KPI cards -->
-    <section class="kpi-row" aria-label="Headline metrics">
+    <section class="kpi-row" aria-label="Headline metrics" aria-live="polite">
       <article class="kpi-card">
         <p class="kpi-card__label">Net Revenue</p>
         <p class="kpi-card__value" id="kpi-netRevenue">—</p>
@@ -106,17 +109,17 @@
       <h2 class="act__heading">Revenue &amp; Cost — how the numbers break down</h2>
       <div class="chart-box" id="box-waterfall">
         <h3 class="chart-box__title">Revenue Waterfall</h3>
-        <div class="chart-box__canvas"><canvas id="chart-waterfall"></canvas></div>
+        <div class="chart-box__canvas"><canvas id="chart-waterfall" role="img" aria-label="Revenue waterfall: gross revenue minus refunds equals net revenue, then partner payout"></canvas></div>
         <p class="chart-box__placeholder">[A] Chart renders at M4</p>
       </div>
       <div class="chart-box" id="box-payout-tiers">
         <h3 class="chart-box__title">Tiered Rev-Share Payout</h3>
-        <div class="chart-box__canvas"><canvas id="chart-payout-tiers"></canvas></div>
+        <div class="chart-box__canvas"><canvas id="chart-payout-tiers" role="img" aria-label="Tiered rev-share payout broken into tier 1, 2 and 3"></canvas></div>
         <p class="chart-box__placeholder">[B] Chart renders at M4</p>
       </div>
       <div class="chart-box chart-box--wide" id="box-cost-over-time">
         <h3 class="chart-box__title">Credit Cost Over 12 Months</h3>
-        <div class="chart-box__canvas"><canvas id="chart-cost-over-time"></canvas></div>
+        <div class="chart-box__canvas"><canvas id="chart-cost-over-time" role="img" aria-label="Monthly and cumulative credit cost across 12 months"></canvas></div>
         <p class="chart-box__placeholder">[C] Chart renders at M4</p>
       </div>
     </section>
@@ -127,12 +130,12 @@
       <div class="marketing-charts">
         <div class="chart-box" id="box-channels-bar">
           <h3 class="chart-box__title">Value by Channel</h3>
-          <div class="chart-box__canvas"><canvas id="chart-channels-bar"></canvas></div>
+          <div class="chart-box__canvas"><canvas id="chart-channels-bar" role="img" aria-label="Marketing value by channel, ranked highest to lowest"></canvas></div>
           <p class="chart-box__placeholder">[D] Chart renders at M4</p>
         </div>
         <div class="chart-box" id="box-marketing-mix">
           <h3 class="chart-box__title">Marketing Value Mix</h3>
-          <div class="chart-box__canvas"><canvas id="chart-marketing-mix"></canvas></div>
+          <div class="chart-box__canvas"><canvas id="chart-marketing-mix" role="img" aria-label="Marketing value mix as a share of total marketing value"></canvas></div>
           <p class="chart-box__placeholder">[E] Chart renders at M4</p>
         </div>
       </div>
@@ -143,7 +146,7 @@
     <section class="act act--total" aria-label="Total Partnership Value">
       <h2 class="act__heading">Total Partnership Value — put it all together</h2>
       <div class="chart-box chart-box--full" id="box-value-stack">
-        <div class="chart-box__canvas"><canvas id="chart-value-stack"></canvas></div>
+        <div class="chart-box__canvas"><canvas id="chart-value-stack" role="img" aria-label="Total partnership value: cash payout plus six marketing channels stacked"></canvas></div>
         <p class="chart-box__placeholder">[F] Stacked value bar renders at M4</p>
       </div>
       <p class="total-callout">

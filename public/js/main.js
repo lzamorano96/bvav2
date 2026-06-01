@@ -6,7 +6,7 @@ import { loadData, loadPreset, readInputs, validate } from './modules/dataIngest
 import { assess } from './modules/calcEngine.js';
 import * as ui from './modules/uiController.js';
 import { renderAll } from './modules/chartRenderer.js';
-import { initExport, decodeStateFromUrl, clearUrl } from './modules/exporter.js';
+import { initExport, decodeStateFromUrl, decodePartnerFromUrl, clearUrl } from './modules/exporter.js';
 
 const PRESETS = [
   { value: 'saas', label: 'SaaS — reference example' },
@@ -31,6 +31,10 @@ async function bootstrap() {
 
   initExport(() => state.inputs);
 
+  // Restore partner name from a shared link, if present.
+  const partner = decodePartnerFromUrl();
+  if (partner) document.getElementById('partner-input').value = partner;
+
   // Restore from a shared URL if present; otherwise load the reference preset.
   const fromUrl = decodeStateFromUrl();
   if (fromUrl) {
@@ -39,7 +43,7 @@ async function bootstrap() {
   } else {
     await loadScenario(PRESETS[0].value);
   }
-  console.info('[BVA] M5 ready (charts + export).');
+  console.info('[BVA] M7 ready (polish).');
 }
 
 /** Read DOM -> validate -> calc -> paint. Charts wired at M4. */

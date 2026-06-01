@@ -198,13 +198,19 @@ function renderValueStack(stack) {
         label: seg.label,
         data: [seg.value],
         backgroundColor: seg.key === 'payout' ? t.accent : t.series[(i) % t.series.length],
+        barThickness: 90,            // bold full-width band (was a thin sliver)
+        borderWidth: 1,
+        borderColor: '#fff',
       })),
     },
     options: baseOptions({
       indexAxis: 'y',
       plugins: { legend: { display: true, position: 'bottom' },
                  tooltip: { callbacks: { label: (c) => `${c.dataset.label}: ${usd(c.parsed.x)}` } } },
-      scales: { x: { stacked: true, beginAtZero: true, ticks: { callback: (v) => usd(v) } }, y: { stacked: true } },
+      scales: {
+        x: { stacked: true, beginAtZero: true, ticks: { callback: (v) => usd(v) } },
+        y: { stacked: true, grid: { display: false } },
+      },
     }),
   });
 }

@@ -17,7 +17,13 @@ body { font-family: var(--font-sans); color: var(--color-text); background: var(
   padding: 2px 8px; border-radius: 6px;
 }
 .brand__title { font-size: var(--fs-lg); font-weight: 700; }
-.brand__partner { color: #cbd5e1; }
+.brand__sep { color: #64748b; }
+.brand__partner-input {
+  background: transparent; border: 0; border-bottom: 1px dashed #475569;
+  color: #fff; font-size: var(--fs-lg); font-weight: 600; padding: 2px 4px; min-width: 160px;
+}
+.brand__partner-input::placeholder { color: #94a3b8; font-weight: 400; font-style: italic; }
+.brand__partner-input:focus { outline: none; border-bottom-color: var(--color-accent); }
 .header-actions { display: flex; align-items: center; gap: var(--space-3); }
 .preset { display: flex; align-items: center; gap: var(--space-2); font-size: var(--fs-sm); color: #cbd5e1; }
 .preset select { padding: 6px 10px; border-radius: 8px; border: 1px solid #334155; background: #1f2937; color: #fff; }
@@ -37,6 +43,9 @@ body { font-family: var(--font-sans); color: var(--color-text); background: var(
 
 /* ---- Buttons ---- */
 .btn { border: 0; border-radius: 8px; padding: 10px 16px; font-weight: 600; cursor: pointer; }
+.btn:focus-visible,
+.preset select:focus-visible,
+.export-menu button:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
 .btn--primary { background: var(--color-accent); color: #1a1a1a; }
 .btn--primary:hover { filter: brightness(0.95); }
 .btn--ghost { background: transparent; border: 1px solid currentColor; color: inherit; }
