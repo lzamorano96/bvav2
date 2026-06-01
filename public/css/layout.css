@@ -20,7 +20,9 @@
 .act--marketing,
 .act--total { grid-column: 1 / -1; }
 
-.input-panel { grid-column: 1; position: sticky; top: var(--space-3); }
+/* Static (not sticky): the panel scrolls with the page and stays within its
+   Act-1 cell, so it never floats over the full-width Act 2 / Act 3 sections. */
+.input-panel { grid-column: 1; }
 .act--revenue { grid-column: 2; }
 
 /* KPI row: 4 across */
