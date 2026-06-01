@@ -62,6 +62,11 @@ export function syncUrl(inputs) {
   history.replaceState(null, '', encodeStateToUrl(inputs));
 }
 
+/** Strip any shared-scenario hash so the URL returns to the bare app. */
+export function clearUrl() {
+  history.replaceState(null, '', `${location.origin}${location.pathname}`);
+}
+
 /** Download each chart canvas as a PNG. */
 function downloadCharts() {
   CHART_FILES.forEach(([id, name]) => {

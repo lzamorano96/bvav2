@@ -6,7 +6,7 @@ import { loadData, loadPreset, readInputs, validate } from './modules/dataIngest
 import { assess } from './modules/calcEngine.js';
 import * as ui from './modules/uiController.js';
 import { renderAll } from './modules/chartRenderer.js';
-import { initExport, decodeStateFromUrl, syncUrl } from './modules/exporter.js';
+import { initExport, decodeStateFromUrl, clearUrl } from './modules/exporter.js';
 
 const PRESETS = [
   { value: 'saas', label: 'SaaS — reference example' },
@@ -53,7 +53,9 @@ function recalc() {
   ui.paintKpis(state.results);
   ui.paintChannelCards(state.results, state.benchmarks);
   renderAll(state.results);
-  syncUrl(state.inputs);
+  // Note: the URL is NOT auto-synced on every change — a plain refresh of the
+  // bare URL returns to defaults. Shareable links are produced on demand via
+  // the Export → "Copy shareable link" button (encodeStateToUrl).
 }
 
 async function loadScenario(name) {
@@ -72,6 +74,7 @@ function applyDefaults() {
   for (const [k, rule] of Object.entries(state.schema.fields)) {
     if (rule.default !== undefined) defaults[k] = k === 'refundRate' ? rule.default : rule.default;
   }
+  clearUrl();          // drop any shared-scenario hash so Reset truly resets
   ui.fillInputs(defaults);
   recalc();
 }
