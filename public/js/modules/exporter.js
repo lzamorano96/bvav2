@@ -8,7 +8,8 @@
 import { snapshot } from './chartRenderer.js';
 
 // Fields encoded into the share link. refundRate stays fractional (0.15).
-const FIELDS = ['unitsSold', 'unitPrice', 'refundRate', 'activeUsers', 'costPerCredit', 'upfrontCredits', 'monthlyCredits'];
+const FIELDS = ['tier1Units', 'tier1Price', 'tier2Units', 'tier2Price', 'tier3Units', 'tier3Price',
+                'refundRate', 'activeUsers', 'costPerCredit', 'upfrontCredits', 'monthlyCredits'];
 
 const CHART_FILES = [
   ['chart-waterfall', 'revenue-waterfall'],

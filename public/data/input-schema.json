@@ -1,13 +1,17 @@
 {
   "_comment": "Field definitions + validation rules consumed by dataIngestion.js (M1).",
   "fields": {
-    "unitsSold":     { "type": "integer", "min": 0, "required": true, "default": 500 },
-    "unitPrice":     { "type": "number",  "min": 0, "required": true, "default": 59 },
+    "tier1Units":    { "type": "integer", "min": 0, "required": true, "default": 100 },
+    "tier1Price":    { "type": "number",  "min": 0, "required": true, "default": 250 },
+    "tier2Units":    { "type": "integer", "min": 0, "required": true, "default": 150 },
+    "tier2Price":    { "type": "number",  "min": 0, "required": true, "default": 150 },
+    "tier3Units":    { "type": "integer", "min": 0, "required": true, "default": 250 },
+    "tier3Price":    { "type": "number",  "min": 0, "required": true, "default": 100 },
     "refundRate":    { "type": "percent", "min": 0, "max": 1, "required": true, "default": 0.15 },
     "costPerCredit": { "type": "number",  "min": 0, "required": true, "default": 0.04 },
     "upfrontCredits":{ "type": "integer", "min": 0, "required": true, "default": 100 },
     "monthlyCredits":{ "type": "integer", "min": 0, "required": true, "default": 25 },
-    "activeUsers":   { "type": "integer", "min": 0, "required": true, "default": 400 }
+    "activeUsers":   { "type": "integer", "min": 0, "required": true, "default": 200 }
   },
   "note": "Rev-share tiers and marketing valuation rates default from benchmarks.json but may be overridden in-UI when config.featureFlags.editableBenchmarks is true."
 }

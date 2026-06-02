@@ -63,9 +63,13 @@ export function assess(inputs, benchmarks, config = {}) {
   };
 }
 
-// --- Revenue: gross - refunds = net -------------------------------------------
-export function computeRevenue({ unitsSold, unitPrice, refundRate }) {
-  const grossRevenue = round2(unitsSold * unitPrice);
+// --- Revenue: per-license-tier gross - refunds = net -------------------------
+// Gross = sum of (units × price) across the three license tiers. One shared
+// refund rate applies to the blended gross.
+export function computeRevenue({ tier1Units, tier1Price, tier2Units, tier2Price, tier3Units, tier3Price, refundRate }) {
+  const grossRevenue = round2(
+    tier1Units * tier1Price + tier2Units * tier2Price + tier3Units * tier3Price
+  );
   const refundAmount = round2(grossRevenue * refundRate);
   const netRevenue   = round2(grossRevenue - refundAmount);
   return { grossRevenue, refundAmount, netRevenue };
