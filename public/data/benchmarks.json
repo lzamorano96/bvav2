@@ -13,5 +13,5 @@
     { "tier": 2, "rate": 0.30, "from": 50000,  "to": 100000 },
     { "tier": 3, "rate": 0.40, "from": 100000, "to": null }
   ],
-  "credits": { "costPerCredit": 0.12, "upfrontCreditsPerUser": 100, "monthlyCreditsPerUser": 25, "monthlyDeclineByM12": 0.44 }
+  "credits": { "costPerCredit": 0.12, "upfrontCreditsPerUser": 100, "monthlyCreditsPerUser": 25, "monthlyDeclineByM12": 0.44, "usageAggressive": 0.8, "usageConservative": 0.5 }
 }

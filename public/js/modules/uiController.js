@@ -40,7 +40,7 @@ export function paintCostRecovery(results) {
     <h3 class="cost-recovery__title">Cost Recovery</h3>
     <p class="cost-recovery__label">Net cash to partner</p>
     <p class="cost-recovery__value cost-recovery__value--${netClass}">${money(m.netCashToPartner)}</p>
-    <p class="cost-recovery__sub">payout ${money(m.partnerPayout)} − 12-mo costs ${money(m.cumulativeCost12)}</p>
+    <p class="cost-recovery__sub">payout ${money(m.partnerPayout)} − 12-mo costs ${money(m.cumulativeCost12)} (aggressive usage)</p>
     <p class="cost-recovery__note">${note}</p>`;
 }
 

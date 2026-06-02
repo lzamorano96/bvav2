@@ -40,7 +40,7 @@ export function renderAll(results) {
 
   renderWaterfall(results.comparisons.revenueWaterfall);
   renderPayoutTiers(results.comparisons.payoutTiers);
-  renderCostOverTime(results.series.costOverTime);
+  renderCostOverTime(results.series.costOverTime, results.metrics.partnerPayout, results.series.costUsage);
   renderChannelsBar(results.comparisons.marketingChannels);
   renderMarketingMix(results.series.marketingMix);
   renderValueStack(results.comparisons.totalValueStack);
@@ -114,38 +114,43 @@ function renderPayoutTiers(tiers) {
         label: `Tier ${tier.tier} (${Math.round(tier.rate * 100)}%)`,
         data: [tier.amount],
         backgroundColor: t.series[i % t.series.length],
+        rate: tier.rate,
+        span: tier.span,
       })),
     },
     options: baseOptions({
       plugins: { legend: { display: true, position: 'bottom' },
-                 tooltip: { callbacks: { label: (c) => `${c.dataset.label}: ${usd(c.parsed.y)}` } } },
+                 // Show the marginal math on hover, e.g. "30% × $50,000 band = $15,000"
+                 tooltip: { callbacks: { label: (c) => `${Math.round(c.dataset.rate * 100)}% × ${usd(c.dataset.span)} band = ${usd(c.parsed.y)}` } } },
       scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true, ticks: { callback: (v) => usd(v) } } },
     }),
   });
 }
 
-// [C] Cost over time — monthly line + cumulative line (secondary axis).
-function renderCostOverTime(series) {
+// [C] Cost over time — cumulative cost under Aggressive vs Conservative usage,
+// against a dashed Partner Payout reference line: as long as both cost lines stay
+// below the payout line, the payout covers the credit obligation.
+function renderCostOverTime(series, payout, usage = { aggressive: 0.8, conservative: 0.5 }) {
   const t = theme();
+  const pct = (u) => `${Math.round(u * 100)}% use`;
   upsert('chart-cost-over-time', {
     type: 'line',
     data: {
       labels: series.map((p) => `M${p.month}`),
       datasets: [
-        { label: 'Monthly cost', data: series.map((p) => p.monthly), borderColor: t.series[1],
-          backgroundColor: t.series[1], tension: 0.3, yAxisID: 'y', fill: false },
-        { label: 'Cumulative', data: series.map((p) => p.cumulative), borderColor: t.series[3],
-          backgroundColor: t.series[3], borderDash: [5, 4], tension: 0.3, yAxisID: 'y1', fill: false },
+        { label: `Cumulative — Aggressive (${pct(usage.aggressive)})`, data: series.map((p) => p.cumulativeAggressive),
+          borderColor: t.series[1], backgroundColor: t.series[1], tension: 0.3, fill: false },
+        { label: `Cumulative — Conservative (${pct(usage.conservative)})`, data: series.map((p) => p.cumulativeConservative),
+          borderColor: t.series[3], backgroundColor: t.series[3], tension: 0.3, fill: false },
+        { label: 'Partner payout (one-time)', data: series.map(() => payout), borderColor: t.positive,
+          borderDash: [6, 4], borderWidth: 2, pointRadius: 0, fill: false },
       ],
     },
     options: baseOptions({
       interaction: { mode: 'index', intersect: false },
       plugins: { legend: { display: true, position: 'bottom' },
                  tooltip: { callbacks: { label: (c) => `${c.dataset.label}: ${usd(c.parsed.y)}` } } },
-      scales: {
-        y:  { position: 'left',  beginAtZero: true, title: { display: true, text: 'Monthly' }, ticks: { callback: (v) => usd(v) } },
-        y1: { position: 'right', beginAtZero: true, grid: { drawOnChartArea: false }, title: { display: true, text: 'Cumulative' }, ticks: { callback: (v) => usd(v) } },
-      },
+      scales: { y: { beginAtZero: true, title: { display: true, text: 'Cumulative cost' }, ticks: { callback: (v) => usd(v) } } },
     }),
   });
 }

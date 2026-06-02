@@ -28,7 +28,7 @@ export function assess(inputs, benchmarks, config = {}) {
   const netCashToPartner = round2(payout.partnerPayout - cost.cumulativeCost);
   let coveredMonths = 0;
   for (const p of cost.series) {
-    if (p.cumulative <= payout.partnerPayout) coveredMonths = p.month; else break;
+    if (p.cumulativeAggressive <= payout.partnerPayout) coveredMonths = p.month; else break;
   }
   const fullyCovered = cost.cumulativeCost <= payout.partnerPayout;
 
@@ -51,6 +51,7 @@ export function assess(inputs, benchmarks, config = {}) {
     },
     series: {
       costOverTime: cost.series,
+      costUsage: { aggressive: cost.usageAggressive, conservative: cost.usageConservative },
       marketingMix: market.mix,
     },
     comparisons: {
@@ -99,24 +100,34 @@ export function computeMarketingValue(channelDefs) {
 // --- Credit cost curve: upfront + monthly geometric decline to -declineByM12 --
 export function computeCostCurve({ activeUsers, upfrontCredits, monthlyCredits, costPerCredit }, credits, horizon) {
   const upfrontCost     = round2(activeUsers * upfrontCredits * costPerCredit);
+  // Full monthly allotment (100% usage), month 1 — drives the peak/month-12 figures.
   const peakMonthlyCost = round2(activeUsers * monthlyCredits * costPerCredit);
 
   // Geometric monthly decay so month `horizon` equals peak * (1 - declineByM12).
   const decline = credits.monthlyDeclineByM12 ?? 0;
   const decay = horizon > 1 ? Math.pow(1 - decline, 1 / (horizon - 1)) : 1;
 
+  // Two usage scenarios scale the monthly consumption; upfront (activation) is fixed.
+  const uAgg = credits.usageAggressive ?? 1;
+  const uCon = credits.usageConservative ?? 0.5;
+
   const series = [];
-  let cumulative = upfrontCost;
+  let cumAgg = upfrontCost, cumCon = upfrontCost, lastFull = peakMonthlyCost;
   for (let m = 1; m <= horizon; m++) {
-    const monthly = round2(peakMonthlyCost * Math.pow(decay, m - 1));
-    cumulative = round2(cumulative + monthly);
-    series.push({ month: m, monthly, cumulative });
+    const monthlyFull = round2(peakMonthlyCost * Math.pow(decay, m - 1));
+    lastFull = monthlyFull;
+    cumAgg = round2(cumAgg + monthlyFull * uAgg);
+    cumCon = round2(cumCon + monthlyFull * uCon);
+    series.push({ month: m, monthly: monthlyFull, cumulativeAggressive: cumAgg, cumulativeConservative: cumCon });
   }
   return {
     upfrontCost,
     peakMonthlyCost,
-    lastMonthCost: series[series.length - 1].monthly,
-    cumulativeCost: series[series.length - 1].cumulative,
+    lastMonthCost: lastFull,
+    cumulativeCost: cumAgg,                 // aggressive (prudent) case drives Cost Recovery
+    cumulativeConservative: cumCon,
+    usageAggressive: uAgg,
+    usageConservative: uCon,
     series,
   };
 }

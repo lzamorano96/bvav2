@@ -43,7 +43,8 @@
       <article class="kpi-card">
         <p class="kpi-card__label">Partner Payout</p>
         <p class="kpi-card__value" id="kpi-partnerPayout">—</p>
-        <p class="kpi-card__sub" id="kpi-blendedRate">blended —</p>
+        <p class="kpi-card__sub" id="kpi-blendedRate"
+           title="Weighted average across tiers = payout ÷ net revenue">blended —</p>
       </article>
       <article class="kpi-card">
         <p class="kpi-card__label">Marketing Value</p>
@@ -114,12 +115,14 @@
       </div>
       <div class="chart-box" id="box-payout-tiers">
         <h3 class="chart-box__title">Tiered Rev-Share Payout</h3>
+        <p class="chart-box__subtitle">Marginal tiers — each revenue band earns its own rate.</p>
         <div class="chart-box__canvas"><canvas id="chart-payout-tiers" role="img" aria-label="Tiered rev-share payout broken into tier 1, 2 and 3"></canvas></div>
         <p class="chart-box__placeholder">[B] Chart renders at M4</p>
       </div>
       <div class="chart-box chart-box--wide" id="box-cost-over-time">
         <h3 class="chart-box__title">Credit Cost Over 12 Months</h3>
-        <div class="chart-box__canvas"><canvas id="chart-cost-over-time" role="img" aria-label="Monthly and cumulative credit cost across 12 months"></canvas></div>
+        <p class="chart-box__subtitle">Cumulative cost under aggressive vs. conservative usage, against your one-time payout.</p>
+        <div class="chart-box__canvas"><canvas id="chart-cost-over-time" role="img" aria-label="Cumulative credit cost over 12 months under aggressive and conservative usage, compared to the one-time partner payout"></canvas></div>
         <p class="chart-box__placeholder">[C] Chart renders at M4</p>
       </div>
       <aside class="cost-recovery" id="cost-recovery" aria-label="Cost recovery summary"></aside>
@@ -157,8 +160,12 @@
       <details class="methodology">
         <summary>Assumptions &amp; methodology</summary>
         <div id="methodology-body">
-          <p>Net revenue = units × price − refunds. Partner payout applies a stepped rev-share
-             to net revenue. Marketing value sums six channel valuations at the rates shown in
+          <p>Net revenue = units × price − refunds. Partner payout applies a <strong>marginal
+             (progressive) stepped rev-share</strong> to net revenue — each band of revenue earns
+             its own rate (e.g. the first $50k at 25%, the next $50k at 30%, anything above $100k
+             at 40%). The <strong>blended rate</strong> shown on the Partner Payout card is the
+             weighted average across those bands (payout ÷ net revenue), so it sits between the
+             tier rates. Marketing value sums six channel valuations at the rates shown in
              Assumptions. Credit cost declines geometrically to the month-12 target.</p>
         </div>
       </details>

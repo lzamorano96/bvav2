@@ -100,7 +100,8 @@ body { font-family: var(--font-sans); color: var(--color-text); background: var(
   min-height: 320px; position: relative; display: flex; flex-direction: column;
 }
 .chart-box--wide, .chart-box--full { min-height: 360px; }
-.chart-box__title { font-size: var(--fs-base); font-weight: 700; margin-bottom: var(--space-2); }
+.chart-box__title { font-size: var(--fs-base); font-weight: 700; margin-bottom: 2px; }
+.chart-box__subtitle { font-size: 0.8rem; color: var(--color-muted); margin-bottom: var(--space-2); }
 .chart-box__canvas { position: relative; flex: 1; min-height: 240px; }
 .chart-box__placeholder {
   position: absolute; inset: auto 0 var(--space-2) 0; text-align: center;

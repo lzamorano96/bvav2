@@ -9,6 +9,7 @@ import { renderAll } from './modules/chartRenderer.js';
 import { initExport, decodeStateFromUrl, decodePartnerFromUrl, clearUrl } from './modules/exporter.js';
 
 const PRESETS = [
+  { value: 'default', label: 'Default (starting point)' },
   { value: 'saas', label: 'SaaS — reference example' },
   { value: 'ecommerce', label: 'E-commerce — sample' },
 ];
@@ -26,7 +27,7 @@ async function bootstrap() {
   ui.bindInputs(schema, {
     onChange: recalc,
     onReset: () => applyDefaults(),
-    onPreset: (name) => loadScenario(name),
+    onPreset: (name) => (name === 'default' ? applyDefaults() : loadScenario(name)),
   });
 
   initExport(() => state.inputs);
@@ -35,13 +36,13 @@ async function bootstrap() {
   const partner = decodePartnerFromUrl();
   if (partner) document.getElementById('partner-input').value = partner;
 
-  // Restore from a shared URL if present; otherwise load the reference preset.
+  // Restore from a shared URL if present; otherwise open on the default scenario.
   const fromUrl = decodeStateFromUrl();
   if (fromUrl) {
     ui.fillInputs(fromUrl);
     recalc();
   } else {
-    await loadScenario(PRESETS[0].value);
+    applyDefaults();
   }
   console.info('[BVA] M7 ready (polish).');
 }
@@ -77,9 +78,11 @@ async function loadScenario(name) {
 function applyDefaults() {
   const defaults = {};
   for (const [k, rule] of Object.entries(state.schema.fields)) {
-    if (rule.default !== undefined) defaults[k] = k === 'refundRate' ? rule.default : rule.default;
+    if (rule.default !== undefined) defaults[k] = rule.default;
   }
   clearUrl();          // drop any shared-scenario hash so Reset truly resets
+  const sel = document.getElementById('preset-select');
+  if (sel) sel.value = 'default';   // keep the dropdown in sync
   ui.fillInputs(defaults);
   recalc();
 }
