@@ -20,11 +20,12 @@ function theme() {
   const v = (n, fb) => (cs.getPropertyValue(n).trim() || fb);
   palette = {
     series: [1,2,3,4,5,6].map((i) => v(`--series-${i}`, '#0ea5e9')),
-    accent: v('--color-accent', '#ffbe00'),
-    negative: v('--color-negative', '#dc2626'),
-    positive: v('--color-positive', '#16a34a'),
-    text: v('--color-text', '#1a1a1a'),
-    muted: v('--color-muted', '#6b7280'),
+    stroke: v('--series-stroke', '#434D59'),   // Grace — graphical-object contrast on light bg
+    accent: v('--color-accent', '#FFBC00'),
+    negative: v('--color-negative', '#D7263D'),
+    positive: v('--color-positive', '#07C03B'),
+    text: v('--color-text', '#1B1B1B'),
+    muted: v('--color-muted', '#434D59'),
   };
   return palette;
 }
@@ -93,7 +94,7 @@ function renderWaterfall(steps) {
     type: 'bar',
     data: {
       labels: steps.map((s) => s.label),
-      datasets: [{ label: '', data: ranges, backgroundColor: colors, borderRadius: 4 }],
+      datasets: [{ label: '', data: ranges, backgroundColor: colors, borderColor: t.stroke, borderWidth: 1, borderRadius: 4 }],
     },
     options: baseOptions({
       scales: { y: { beginAtZero: true, ticks: { callback: (v) => usd(v) } } },
@@ -112,6 +113,7 @@ function renderPayoutTiers(tiers) {
         label: `Tier ${tier.tier} (${Math.round(tier.rate * 100)}%)`,
         data: [tier.amount],
         backgroundColor: t.series[i % t.series.length],
+        borderColor: t.stroke, borderWidth: 1,
         rate: tier.rate,
         span: tier.span,
       })),
@@ -137,9 +139,9 @@ function renderCostOverTime(series, payout, usage = { aggressive: 0.8, conservat
       labels: series.map((p) => `M${p.month}`),
       datasets: [
         { label: `Cumulative — Aggressive (${pct(usage.aggressive)})`, data: series.map((p) => p.cumulativeAggressive),
-          borderColor: t.series[1], backgroundColor: t.series[1], tension: 0.3, fill: false },
+          borderColor: t.series[1], backgroundColor: t.series[1], borderWidth: 3, tension: 0.3, fill: false },
         { label: `Cumulative — Conservative (${pct(usage.conservative)})`, data: series.map((p) => p.cumulativeConservative),
-          borderColor: t.series[3], backgroundColor: t.series[3], tension: 0.3, fill: false },
+          borderColor: t.series[3], backgroundColor: t.series[3], borderWidth: 3, tension: 0.3, fill: false },
         { label: 'Partner payout (one-time)', data: series.map(() => payout), borderColor: t.positive,
           borderDash: [6, 4], borderWidth: 2, pointRadius: 0, fill: false },
       ],
@@ -161,7 +163,8 @@ function renderChannelsBar(channels) {
     data: {
       labels: channels.map((c) => c.label),
       datasets: [{ label: 'Value', data: channels.map((c) => c.value),
-        backgroundColor: channels.map((_, i) => t.series[i % t.series.length]), borderRadius: 4 }],
+        backgroundColor: channels.map((_, i) => t.series[i % t.series.length]),
+        borderColor: t.stroke, borderWidth: 1, borderRadius: 4 }],
     },
     options: baseOptions({
       indexAxis: 'y',
@@ -178,7 +181,8 @@ function renderMarketingMix(mix) {
     data: {
       labels: mix.map((m) => m.label),
       datasets: [{ data: mix.map((m) => m.value),
-        backgroundColor: mix.map((_, i) => t.series[i % t.series.length]) }],
+        backgroundColor: mix.map((_, i) => t.series[i % t.series.length]),
+        borderColor: '#fff', borderWidth: 2 }],
     },
     options: baseOptions({
       cutout: '58%',

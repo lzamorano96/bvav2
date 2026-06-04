@@ -1,21 +1,47 @@
-/* theme.css — brand design tokens: colors, spacing, type scale. Filled at M3. */
+/* theme.css — AppSumo brand design tokens (two-layer: palette → semantic).
+   Components consume ONLY the --color-* / --series-* aliases; a re-brand edits
+   the alias block, never the components. Contrast notes are WCAG 2.1 AA. */
 :root {
-  /* Color tokens (placeholder palette — finalize against AppSumo brand at M3) */
-  --color-bg: #ffffff;
-  --color-surface: #f6f7f9;
-  --color-text: #1a1a1a;
-  --color-muted: #6b7280;
-  --color-accent: #ffbe00;        /* AppSumo yellow (placeholder) */
-  --color-positive: #16a34a;
-  --color-negative: #dc2626;
+  /* ── Brand palette (immutable source) ──────────────────────────── */
+  --as-bolt:        #0E6EF4;   /* Bolt    — interactive / CTA / links */
+  --as-dollar:      #07C03B;   /* Dollar  — positive / success */
+  --as-dorado:      #FFBC00;   /* Dorado  — hero highlight (AppSumo yellow) */
+  --as-pinky:       #FF85FF;   /* Pinky   — data-viz accent only */
+  --as-midnight:    #1B1B1B;   /* text / dark accents */
+  --as-black-pearl: #021414;   /* deepest surface (optional) */
+  --as-grace:       #434D59;   /* muted / secondary text */
+  --as-slate:       #8E9BAA;   /* non-text: borders / disabled */
+  --as-gravel:      #C7CED7;   /* input borders */
+  --as-sundog:      #DADDE5;   /* card borders */
+  --as-iceberg:     #F5F5F9;   /* surfaces */
+  --as-white:       #FFFFFF;
 
-  /* Chart series palette (mapped in chartRenderer.js) */
-  --series-1: #0ea5e9;
-  --series-2: #f59e0b;
-  --series-3: #10b981;
-  --series-4: #6366f1;
-  --series-5: #ec4899;
-  --series-6: #64748b;
+  /* ── Semantic aliases (consumed by components) ─────────────────── */
+  --color-bg:             var(--as-white);
+  --color-surface:        var(--as-iceberg);
+  --color-border:         var(--as-sundog);
+  --color-border-strong:  var(--as-gravel);
+  --color-text:           var(--as-midnight);   /* 17.2:1 on bg */
+  --color-muted:          var(--as-grace);       /* 8.6:1 on bg */
+  --color-decorative:     var(--as-slate);       /* non-text only */
+  --color-primary:        var(--as-bolt);        /* CTA / links / focus */
+  --color-on-primary:     var(--as-white);       /* 4.61:1 on bolt */
+  --color-highlight:      var(--as-dorado);
+  --color-highlight-soft: color-mix(in srgb, var(--as-dorado) 14%, var(--as-white));
+  --color-on-highlight:   var(--as-midnight);    /* 10.2:1 on dorado */
+  --color-positive:       var(--as-dollar);
+  --color-on-positive:    var(--as-midnight);    /* 7.07:1 on dollar */
+  --color-negative:       #D7263D;               /* non-palette: no brand red */
+  --color-accent:         var(--as-dorado);      /* back-compat alias */
+
+  /* ── Chart series (brand-mapped). Sub-3:1 fills get a Grace stroke ─ */
+  --series-1: var(--as-bolt);
+  --series-2: var(--as-dorado);
+  --series-3: var(--as-dollar);
+  --series-4: var(--as-grace);
+  --series-5: var(--as-slate);
+  --series-6: var(--as-pinky);
+  --series-stroke: var(--as-grace);
 
   /* Spacing scale */
   --space-1: 4px;  --space-2: 8px;  --space-3: 16px;
@@ -27,5 +53,5 @@
   --fs-xl: 1.75rem;  --fs-2xl: 2.5rem;
 
   --radius: 10px;
-  --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.04);
+  --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04);
 }
