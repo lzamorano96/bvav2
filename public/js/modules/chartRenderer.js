@@ -226,3 +226,25 @@ function renderValueStack(stack) {
 export function snapshot(canvasId) {
   return instances[canvasId]?.toBase64Image() ?? null;
 }
+
+/**
+ * Capture a chart at `scale`× device pixel ratio for high-resolution PDF embedding.
+ * Temporarily raises the backing-store DPR, re-renders, reads the PNG, then restores
+ * the on-screen DPR (releasing the large buffer). Returns { url, aspect } or null.
+ */
+export async function captureHiRes(canvasId, scale = 3) {
+  const chart = instances[canvasId];
+  if (!chart) return null;
+  const aspect = chart.height / chart.width;          // CSS px ratio (stable across DPR)
+  const prevDpr = chart.options.devicePixelRatio;
+  const prevAnim = chart.options.animation;
+  chart.options.devicePixelRatio = scale;
+  chart.options.animation = false;
+  chart.resize();
+  await new Promise(requestAnimationFrame);            // let the high-DPI frame paint
+  const url = chart.toBase64Image('image/png', 1.0);
+  chart.options.devicePixelRatio = prevDpr;            // restore + free the 3× buffer
+  chart.options.animation = prevAnim;
+  chart.resize();
+  return { url, aspect };
+}

@@ -85,7 +85,6 @@ export function bindInputs(schema, handlers, debounceMs = 250) {
   });
   document.getElementById('btn-calculate').addEventListener('click', handlers.onChange);
   document.getElementById('btn-reset').addEventListener('click', handlers.onReset);
-  document.getElementById('preset-select').addEventListener('change', (e) => handlers.onPreset(e.target.value));
 }
 
 /** Populate input fields from a flat values map (presets / schema defaults). */
