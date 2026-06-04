@@ -37,5 +37,9 @@ Or `firebase emulators:start --only hosting`.
 3. `firebase deploy --only hosting`.
 
 ## Status
-**M0 — scaffold complete.** Folder tree + stubs in place; `index.html` serves.
-Next: **M1 — data layer**. See `docs/PROJECT-PLAN.md`.
+**v1 — live.** Deployed to Firebase Hosting (`bva-appsumo`). Per-license-tier sales
+model, dual-scenario credit cost, marketing value, and AppSumo brand styling complete.
+The pre-restyle look is preserved under the git tag `styling-v1-pre-appsumo`.
+
+## Author / Maintainer
+Built and maintained by **Luis Zamorano**.
