@@ -9,6 +9,7 @@ Firebase Hosting.
 - Vanilla HTML / CSS / JS (no bundler)
 - [Chart.js 4.x](https://www.chartjs.org/) (MIT) — vendored in `public/js/lib/`
 - JSON config / benchmarks / presets in `public/data/`
+- AppSumo Brand Kit CSS Stylized Guide
 
 ## Structure
 ```
@@ -29,13 +30,7 @@ Any static server, e.g.:
 cd public
 python -m http.server 8000   # -> http://localhost:8000
 ```
-Or `firebase emulators:start --only hosting`.
-
-## Deploy (M6)
-1. Vendor Chart.js into `public/js/lib/chart.umd.min.js`.
-2. Set your project id in `.firebaserc` (or `firebase use --add`).
-3. `firebase deploy --only hosting`.
+Or `firebase emulators:start --only hosting`
 
 ## Status
-**M0 — scaffold complete.** Folder tree + stubs in place; `index.html` serves.
-Next: **M1 — data layer**. See `docs/PROJECT-PLAN.md`.
+Completed V1 of Business Value Assessment
