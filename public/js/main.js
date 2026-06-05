@@ -11,13 +11,18 @@ import { initExport, decodeStateFromUrl, decodePartnerFromUrl, clearUrl } from '
 const state = { config: null, benchmarks: null, schema: null, inputs: null, results: null };
 
 async function bootstrap() {
-  const { config, benchmarks, schema } = await loadData();
-  Object.assign(state, { config, benchmarks, schema });
+  try {
+    Object.assign(state, await loadData());   // {config, benchmarks, schema}
+  } catch (e) {
+    console.error('[BVA] Failed to load calculator data', e);
+    ui.setStatus('Could not load calculator data — please refresh the page.', 'error');
+    return;
+  }
 
-  ui.initFormat(config);
-  ui.paintAssumptions(benchmarks);
+  ui.initFormat(state.config);
+  ui.paintAssumptions(state.benchmarks);
 
-  ui.bindInputs(schema, {
+  ui.bindInputs(state.schema, {
     onChange: recalc,
     onReset: () => applyDefaults(),
   });

@@ -79,12 +79,13 @@ export function paintAssumptions(benchmarks) {
  */
 export function bindInputs(schema, handlers, debounceMs = 250) {
   const form = document.getElementById('bva-form');
+  if (!form) { console.warn('[BVA] #bva-form not found — inputs not bound'); return; }
   const debounced = debounce(handlers.onChange, debounceMs);
   form.querySelectorAll('[data-field]').forEach((el) => {
     el.addEventListener('input', debounced);
   });
-  document.getElementById('btn-calculate').addEventListener('click', handlers.onChange);
-  document.getElementById('btn-reset').addEventListener('click', handlers.onReset);
+  document.getElementById('btn-calculate')?.addEventListener('click', handlers.onChange);
+  document.getElementById('btn-reset')?.addEventListener('click', handlers.onReset);
 }
 
 /** Populate input fields from a flat values map (presets / schema defaults). */

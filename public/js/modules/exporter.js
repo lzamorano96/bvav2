@@ -197,7 +197,12 @@ export function decodeStateFromUrl() {
   const p = new URLSearchParams(hash);
   const out = {};
   let any = false;
-  FIELDS.forEach((k) => { const v = p.get(k); if (v != null && v !== '') { out[k] = Number(v); any = true; } });
+  FIELDS.forEach((k) => {
+    const v = p.get(k);
+    if (v == null || v === '') return;
+    const n = Number(v);
+    if (Number.isFinite(n)) { out[k] = n; any = true; }   // ignore malformed (NaN) params
+  });
   return any ? out : null;
 }
 export function syncUrl(inputs) { history.replaceState(null, '', encodeStateToUrl(inputs)); }
