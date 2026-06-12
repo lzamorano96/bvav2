@@ -10,9 +10,9 @@
     "tier3Units":    { "type": "integer", "min": 0, "required": true, "default": 100 },
     "tier3Price":    { "type": "number",  "min": 0, "required": true, "default": 279 },
     "tier4Units":    { "type": "integer", "min": 0, "required": true, "default": 50 },
-    "tier4Price":    { "type": "number",  "min": 0, "required": true, "default": 549 },
+    "tier4Price":    { "type": "number",  "min": 0, "required": true, "default": 399 },
     "tier5Units":    { "type": "integer", "min": 0, "required": true, "default": 25 },
-    "tier5Price":    { "type": "number",  "min": 0, "required": true, "default": 1099 },
+    "tier5Price":    { "type": "number",  "min": 0, "required": true, "default": 599 },
 
     "refundRate":    { "type": "percent", "min": 0, "max": 1, "required": true, "default": 0.15 },
     "costPerCredit": { "type": "number",  "min": 0, "required": true, "default": 0.04 },
