@@ -1,6 +1,6 @@
 {
   "hosting": {
-    "site": "bva-as",
+    "site": "bva-as-v2",
     "public": "public",
     "ignore": [
       "firebase.json",
