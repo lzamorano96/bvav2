@@ -1,9 +1,10 @@
 {
-  "_comment": "Default marketing valuation rates + AppSumo reach figures. Editable per engagement (M1). Values seeded from the reference proposal.",
+  "_comment": "Default marketing valuation rates + AppSumo reach figures. Editable per engagement (M1). Revenue-scaled channels (per marketing head, Jun 2026): value = pctOfNetRevenue × net revenue, clamped to [minValue, maxValue]. PDP Video + Affiliate use the 15% midpoint of the quoted 10-20% driver; Launch Email uses 25% so it stays the highest-value perk — tune pctOfNetRevenue to adjust. defaultValue is the fallback when no pct is set.",
   "marketingChannels": {
-    "launchEmail":      { "label": "Launch Email Campaign",     "copy": "Featured in launch emails reaching 1M+ subscribers",     "reach": 1000000, "cpm": 30,  "defaultValue": 15000 },
+    "launchEmail":      { "label": "Launch Email Campaign",     "copy": "Featured send to 1M+ subscribers — typically the highest-value placement", "reach": 1000000, "cpm": 30, "pctOfNetRevenue": 0.25, "minValue": 15000, "maxValue": 75000, "defaultValue": 15000 },
     "homepageFeature":  { "label": "Homepage Feature Placement", "copy": "Featured deal — 500K+ monthly visitors",                 "reach": 500000,              "defaultValue": 12500 },
-    "affiliateNetwork": { "label": "Affiliate Network",          "copy": "20,000+ affiliates create reviews, blogs & tutorials",   "affiliates": 20000,          "defaultValue": 20000 },
+    "pdpVideo":         { "label": "PDP Video",                   "copy": "Professional product video on your deal page — a 10–20% conversion lift", "pctOfNetRevenue": 0.15, "minValue": 5000, "maxValue": 25000, "defaultValue": 10000 },
+    "affiliateNetwork": { "label": "Affiliate Network",          "copy": "20,000+ affiliates create reviews, blogs & tutorials — ~10–20% of deal revenue when pushed", "affiliates": 20000, "pctOfNetRevenue": 0.15, "minValue": 10000, "maxValue": 50000, "defaultValue": 20000 },
     "verifiedReviews":  { "label": "Verified User Reviews",      "copy": "{customers} customers = {customers} potential verified reviews", "ratePerReview": 35,  "defaultValue": 52500 },
     "seoOrganic":       { "label": "SEO & Organic Traffic",      "copy": "Page-1 ranking for review & alternative searches",                                     "defaultValue": 20000 },
     "communityBuzz":    { "label": "Community & Social Buzz",    "copy": "200K+ Sumo-lings amplify across forums & social",        "sumolings": 200000,          "defaultValue": 7500 }

@@ -1,17 +1,23 @@
 {
-  "_comment": "Field definitions + validation rules consumed by dataIngestion.js (M1).",
+  "_comment": "V2 field definitions + validation rules. Up to 5 license tiers; tierCount controls how many are active/rendered. Tiers above tierCount default to 0 and are excluded from revenue.",
   "fields": {
+    "tierCount":     { "type": "integer", "min": 1, "max": 5, "required": true, "default": 3 },
+
     "tier1Units":    { "type": "integer", "min": 0, "required": true, "default": 250 },
     "tier1Price":    { "type": "number",  "min": 0, "required": true, "default": 69 },
     "tier2Units":    { "type": "integer", "min": 0, "required": true, "default": 150 },
     "tier2Price":    { "type": "number",  "min": 0, "required": true, "default": 139 },
     "tier3Units":    { "type": "integer", "min": 0, "required": true, "default": 100 },
     "tier3Price":    { "type": "number",  "min": 0, "required": true, "default": 279 },
+    "tier4Units":    { "type": "integer", "min": 0, "required": true, "default": 0 },
+    "tier4Price":    { "type": "number",  "min": 0, "required": true, "default": 0 },
+    "tier5Units":    { "type": "integer", "min": 0, "required": true, "default": 0 },
+    "tier5Price":    { "type": "number",  "min": 0, "required": true, "default": 0 },
+
     "refundRate":    { "type": "percent", "min": 0, "max": 1, "required": true, "default": 0.15 },
     "costPerCredit": { "type": "number",  "min": 0, "required": true, "default": 0.04 },
     "monthlyCredits":{ "type": "integer", "min": 0, "required": true, "default": 100 },
-    "upfrontCredits":{ "type": "integer", "min": 0, "required": true, "default": 0 },
-    "activeUsers":   { "type": "integer", "min": 0, "required": true, "default": 200 }
+    "upfrontCredits":{ "type": "integer", "min": 0, "required": true, "default": 0 }
   },
-  "note": "Rev-share tiers and marketing valuation rates default from benchmarks.json but may be overridden in-UI when config.featureFlags.editableBenchmarks is true."
+  "note": "Marketing channel toggles + affiliate count are runtime UI state (inputs.marketing), not numeric fields. Rev-share tiers and marketing valuations default from benchmarks.json."
 }

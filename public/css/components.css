@@ -57,6 +57,43 @@ body { font-family: var(--font-sans); color: var(--color-text); background: var(
 .btn--ghost { background: transparent; border: 1px solid var(--color-border-strong); color: var(--color-muted); }
 .btn--ghost:hover { background: var(--color-surface); }
 
+/* ---- V2 inputs section (horizontal tier table + strips) ---- */
+.inputs {
+  background: var(--color-surface); border: 1px solid var(--color-border);
+  border-radius: var(--radius); box-shadow: var(--shadow); padding: var(--space-4);
+}
+.inputs__toolbar { display: flex; align-items: center; gap: var(--space-4); flex-wrap: wrap; margin-bottom: var(--space-4); }
+.tier-count { display: flex; align-items: center; gap: var(--space-2); font-weight: 700; font-size: var(--fs-sm); }
+.tier-count select { padding: 8px 12px; border: 1px solid var(--color-border-strong); border-radius: 8px; background: var(--color-bg); color: var(--color-text); font-weight: 700; }
+.inputs__toolbar .form-actions { margin-left: auto; }
+.inputs__toolbar .form-status { width: 100%; }
+
+/* Tier columns — AppSumo pricing-table style (tier header → price → units) */
+.tier-col { background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--radius); overflow: hidden; }
+.tier-col__head { background: var(--color-text); color: #fff; font-weight: 800; text-align: center; padding: var(--space-2); letter-spacing: 0.02em; }
+.tier-col__field { display: block; padding: var(--space-2) var(--space-3); font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; color: var(--color-muted); }
+.tier-col__field:last-child { padding-bottom: var(--space-3); }
+.tier-col__field input { display: block; width: 100%; margin-top: 4px; padding: 9px 11px; border: 1px solid var(--color-border-strong); border-radius: 8px; font-weight: 700; font-size: var(--fs-base); color: var(--color-text); text-transform: none; }
+.tier-col__field input:focus { outline: 2px solid var(--color-primary); border-color: var(--color-primary); }
+
+/* Assumptions strip */
+.assumptions-strip, .marketing-strip { border: 0; padding: 0; margin: var(--space-4) 0 0; }
+.assumptions-strip legend, .marketing-strip legend { font-weight: 700; font-size: var(--fs-sm); text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-muted); margin-bottom: var(--space-2); }
+.assumptions-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-3); }
+.assumptions-strip legend { grid-column: 1 / -1; }
+.assumptions-strip label { display: block; font-size: var(--fs-sm); font-weight: 600; }
+.assumptions-strip input { display: block; width: 100%; margin-top: 4px; padding: 8px 10px; border: 1px solid var(--color-border-strong); border-radius: 8px; font-weight: 500; color: var(--color-text); background: var(--color-bg); }
+.assumptions-strip input:focus { outline: 2px solid var(--color-primary); border-color: var(--color-primary); }
+.assumptions-strip input.is-invalid { border-color: var(--color-negative); }
+
+/* Marketing toggle strip */
+.marketing-strip__hint { font-weight: 400; text-transform: none; letter-spacing: 0; color: var(--color-muted); }
+.marketing-toggles { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-4); }
+.mkt-toggle { display: flex; align-items: center; gap: var(--space-2); font-size: var(--fs-sm); font-weight: 600; cursor: pointer; }
+.mkt-toggle input { width: 16px; height: 16px; accent-color: var(--color-primary); }
+
+@media (max-width: 1024px) { .assumptions-strip { grid-template-columns: repeat(2, 1fr); } .assumptions-strip legend { grid-column: 1 / -1; } }
+
 /* ---- KPI cards ---- */
 .kpi-card {
   background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--radius);
@@ -68,6 +105,20 @@ body { font-family: var(--font-sans); color: var(--color-text); background: var(
 .kpi-card__sub { font-size: var(--fs-sm); color: var(--color-muted); }
 .kpi-card--hero { border-top-color: var(--color-highlight); background: var(--color-highlight-soft); }
 .kpi-card--hero .kpi-card__value { color: var(--color-on-highlight); }
+
+/* Combined "Campaign Economics" box — three grouped figures */
+.kpi-combined { list-style: none; margin: var(--space-2) 0 0; }
+.kpi-combined li {
+  display: flex; justify-content: space-between; align-items: baseline;
+  padding: var(--space-1) 0; border-bottom: 1px dashed var(--color-border);
+}
+.kpi-combined li:last-child { border-bottom: 0; }
+.kpi-combined span { font-size: var(--fs-sm); color: var(--color-muted); }
+.kpi-combined b { font-size: var(--fs-lg); font-weight: 800; color: var(--color-text); }
+
+/* Paying Customers box — count accent in brand green */
+.kpi-card--customers { border-top-color: var(--color-positive); }
+.kpi-card--customers .kpi-card__value { color: var(--color-positive); }
 
 /* ---- Input panel ---- */
 .input-panel {
@@ -133,6 +184,16 @@ body { font-family: var(--font-sans); color: var(--color-text); background: var(
 }
 
 .marketing-charts { display: grid; gap: var(--space-4); margin-bottom: var(--space-4); }
+
+/* Subjective value callouts (Marketing section) */
+.value-callouts { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-3); margin-bottom: var(--space-4); }
+.value-callout {
+  background: color-mix(in srgb, var(--as-bolt) 8%, var(--as-white)); border: 1px solid var(--color-border);
+  border-radius: var(--radius); padding: var(--space-3); text-align: center;
+}
+.value-callout b { display: block; font-size: var(--fs-2xl); font-weight: 800; color: var(--color-primary); line-height: 1.1; }
+.value-callout span { font-size: var(--fs-sm); color: var(--color-muted); }
+@media (max-width: 640px) { .value-callouts { grid-template-columns: 1fr; } }
 
 /* ---- Cost Recovery summary (Act 1) ---- */
 .cost-recovery {

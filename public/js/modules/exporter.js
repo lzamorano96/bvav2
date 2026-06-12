@@ -6,7 +6,9 @@
 
 import { snapshot, captureHiRes } from './chartRenderer.js';
 
-const FIELDS = ['tier1Units', 'tier1Price', 'tier2Units', 'tier2Price', 'tier3Units', 'tier3Price',
+const FIELDS = ['tierCount',
+                'tier1Units', 'tier1Price', 'tier2Units', 'tier2Price', 'tier3Units', 'tier3Price',
+                'tier4Units', 'tier4Price', 'tier5Units', 'tier5Price',
                 'refundRate', 'activeUsers', 'costPerCredit', 'upfrontCredits', 'monthlyCredits'];
 
 const CHART_FILES = [

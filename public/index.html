@@ -32,94 +32,76 @@
 
   <main class="app-grid">
 
-    <!-- Full-width headline KPI cards -->
+    <!-- Full-width headline KPI cards (V2: 3 boxes) -->
     <section class="kpi-row" aria-label="Headline metrics" aria-live="polite">
-      <article class="kpi-card">
-        <p class="kpi-card__label">Net Revenue</p>
-        <p class="kpi-card__value" id="kpi-netRevenue">—</p>
-        <p class="kpi-card__sub">after refunds</p>
-      </article>
-      <article class="kpi-card">
-        <p class="kpi-card__label">Partner Payout</p>
-        <p class="kpi-card__value" id="kpi-partnerPayout">—</p>
+      <article class="kpi-card kpi-card--combined">
+        <p class="kpi-card__label">Campaign Economics</p>
+        <ul class="kpi-combined">
+          <li><span>Net Revenue</span><b id="kpi-netRevenue">—</b></li>
+          <li><span>Partner Payout</span><b id="kpi-partnerPayout">—</b></li>
+          <li><span>Marketing Value</span><b id="kpi-marketingValue">—</b></li>
+        </ul>
         <p class="kpi-card__sub" id="kpi-blendedRate"
-           title="Weighted average across tiers = payout ÷ net revenue">blended —</p>
-      </article>
-      <article class="kpi-card">
-        <p class="kpi-card__label">Marketing Value</p>
-        <p class="kpi-card__value" id="kpi-marketingValue">—</p>
-        <p class="kpi-card__sub">est. equivalent spend</p>
+           title="Weighted average across rev-share tiers = payout ÷ net revenue">blended —</p>
       </article>
       <article class="kpi-card kpi-card--hero">
         <p class="kpi-card__label">Total Partnership Value</p>
         <p class="kpi-card__value" id="kpi-totalValue">—</p>
         <p class="kpi-card__sub">for $0 upfront marketing spend</p>
       </article>
+      <article class="kpi-card kpi-card--customers">
+        <p class="kpi-card__label">Paying Customers</p>
+        <p class="kpi-card__value" id="kpi-payingCustomers">—</p>
+        <p class="kpi-card__sub" id="kpi-exposure">— reached</p>
+      </article>
     </section>
 
-    <!-- ACT 1: input panel (left) -->
-    <aside class="input-panel" aria-label="Inputs">
+    <!-- INPUTS: horizontal AppSumo-style tier table + global assumptions + marketing toggles -->
+    <section class="inputs" aria-label="Inputs">
       <form id="bva-form" autocomplete="off">
-        <fieldset>
-          <legend>Sales by License Tier</legend>
+        <div class="inputs__toolbar">
+          <label class="tier-count">Number of tiers
+            <select id="tier-count" data-field="tierCount" aria-label="Number of license tiers">
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+            </select>
+          </label>
+          <div class="form-actions">
+            <button type="button" id="btn-calculate" class="btn btn--primary">Calculate</button>
+            <button type="button" id="btn-reset" class="btn btn--ghost">Reset</button>
+          </div>
+          <p class="form-status" id="form-status" role="status"></p>
+        </div>
 
-  <label>Tier 1 — units
-    <input type="number" data-field="tier1Units" min="0" step="1" inputmode="numeric" />
-  </label>
-  <label>Tier 1 — price ($)
-    <input type="number" data-field="tier1Price" min="0" step="0.01" inputmode="decimal" />
-  </label>
+        <!-- Horizontal license-tier table — columns rendered by uiController -->
+        <div class="tier-table" id="tier-table" role="group" aria-label="License tiers"></div>
 
-  <label>Tier 2 — units
-    <input type="number" data-field="tier2Units" min="0" step="1" inputmode="numeric" />
-  </label>
-  <label>Tier 2 — price ($)
-    <input type="number" data-field="tier2Price" min="0" step="0.01" inputmode="decimal" />
-  </label>
-
-  <label>Tier 3 — units
-    <input type="number" data-field="tier3Units" min="0" step="1" inputmode="numeric" />
-  </label>
-  <label>Tier 3 — price ($)
-    <input type="number" data-field="tier3Price" min="0" step="0.01" inputmode="decimal" />
-  </label>
-
-  <label>Refund rate (%)
-    <input type="number" data-field="refundRate" min="0" max="100" step="0.1" inputmode="decimal" />
-    <small class="hint">Same across all tiers. Enter as %, e.g. 15 = 15%</small>
-  </label>
-</fieldset>
-
-        <fieldset>
-          <legend>Credit Costs</legend>
-          <label>Active users
-            <input type="number" data-field="activeUsers" min="0" step="1" inputmode="numeric" />
+        <fieldset class="assumptions-strip">
+          <legend>Assumptions</legend>
+          <label>Refund rate (%)
+            <input type="number" data-field="refundRate" min="0" max="100" step="0.1" inputmode="decimal" />
+            <small class="hint">Overall, across all tiers</small>
           </label>
           <label>Cost / credit ($)
             <input type="number" data-field="costPerCredit" min="0" step="0.01" inputmode="decimal" />
           </label>
-           <label>Monthly credits / user
+          <label>Monthly credits / user
             <input type="number" data-field="monthlyCredits" min="0" step="1" inputmode="numeric" />
-
-          </label><label>Upfront credits / user
+          </label>
+          <label>Upfront credits / user
             <input type="number" data-field="upfrontCredits" min="0" step="1" inputmode="numeric" />
           </label>
-         
         </fieldset>
 
-        <fieldset class="assumptions">
-          <legend>Assumptions</legend>
-          <p class="assumptions__note">Rev-share tiers &amp; marketing valuations (defaults):</p>
-          <ul id="assumptions-list" class="assumptions__list"></ul>
+        <fieldset class="marketing-strip">
+          <legend>Marketing inputs <span class="marketing-strip__hint">— toggle what counts toward Marketing Value</span></legend>
+          <div class="marketing-toggles" id="marketing-toggles"></div>
         </fieldset>
-
-        <div class="form-actions">
-          <button type="button" id="btn-calculate" class="btn btn--primary">Calculate</button>
-          <button type="button" id="btn-reset" class="btn btn--ghost">Reset</button>
-        </div>
-        <p class="form-status" id="form-status" role="status"></p>
       </form>
-    </aside>
+    </section>
 
     <!-- ACT 1: Revenue & Cost charts (right) -->
     <section class="act act--revenue" aria-label="Revenue &amp; Cost">
@@ -137,7 +119,7 @@
       </div>
       <div class="chart-box chart-box--wide" id="box-cost-over-time">
         <h3 class="chart-box__title">Credit Cost Over 12 Months</h3>
-        <p class="chart-box__subtitle">Cumulative cost under aggressive vs. conservative usage, against your one-time payout.</p>
+        <p class="chart-box__subtitle">Assumes ~40% of buyers stay active. Cumulative cost under aggressive vs. conservative usage, against your one-time payout.</p>
         <div class="chart-box__canvas"><canvas id="chart-cost-over-time" role="img" aria-label="Cumulative credit cost over 12 months under aggressive and conservative usage, compared to the one-time partner payout"></canvas></div>
         <p class="chart-box__placeholder">[C] Chart renders at M4</p>
       </div>
@@ -147,6 +129,7 @@
     <!-- ACT 2: Marketing Value (full width) -->
     <section class="act act--marketing" aria-label="Marketing Value">
       <h2 class="act__heading">Marketing Value — the money is just the beginning</h2>
+      <div class="value-callouts" id="value-callouts" aria-label="Reach &amp; exposure"></div>
       <div class="marketing-charts">
         <div class="chart-box" id="box-channels-bar">
           <h3 class="chart-box__title">Value by Channel</h3>
@@ -166,7 +149,7 @@
     <section class="act act--total" aria-label="Total Partnership Value">
       <h2 class="act__heading">Total Partnership Value — put it all together</h2>
       <div class="chart-box chart-box--full" id="box-value-stack">
-        <div class="chart-box__canvas"><canvas id="chart-value-stack" role="img" aria-label="Total partnership value: cash payout plus six marketing channels stacked"></canvas></div>
+        <div class="chart-box__canvas"><canvas id="chart-value-stack" role="img" aria-label="Total partnership value: cash payout plus enabled marketing channels stacked"></canvas></div>
         <p class="chart-box__placeholder">[F] Stacked value bar renders at M4</p>
       </div>
       <p class="total-callout">
@@ -176,13 +159,18 @@
       <details class="methodology">
         <summary>Assumptions &amp; methodology</summary>
         <div id="methodology-body">
-          <p>Net revenue = units × price − refunds. Partner payout applies a <strong>marginal
-             (progressive) stepped rev-share</strong> to net revenue — each band of revenue earns
-             its own rate (e.g. the first $50k at 25%, the next $50k at 30%, anything above $100k
-             at 40%). The <strong>blended rate</strong> shown on the Partner Payout card is the
-             weighted average across those bands (payout ÷ net revenue), so it sits between the
-             tier rates. Marketing value sums six channel valuations at the rates shown in
-             Assumptions. Credit cost declines geometrically to the month-12 target.</p>
+          <p>Net revenue = (Σ units × price across your sales tiers) − refunds, applied at one
+             overall refund rate. <strong>Paying Customers</strong> = total units − refunds.
+             Partner payout applies a <strong>marginal (progressive) rev-share</strong> to net
+             revenue — each revenue band earns its own rate (25% to $50k, 30% to $100k, 40%
+             above). These rev-share bands are separate from your sales tiers. The
+             <strong>blended rate</strong> is the weighted average across those bands
+             (payout ÷ net revenue). Marketing Value sums only the <strong>enabled</strong>
+             marketing channels. Launch Email, PDP Video and Affiliate Network are
+             <strong>revenue-scaled</strong> — valued as a share of net revenue and clamped to
+             typical ranges ($15K–$75K, $5K–$25K and $10K–$50K respectively); these are
+             directional upside, not guarantees. Credit cost declines geometrically to the
+             month-12 target.</p>
         </div>
       </details>
     </section>

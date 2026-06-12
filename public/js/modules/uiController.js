@@ -15,15 +15,30 @@ export function initFormat(config = {}) {
 export const money = (n) => (fmtCurrency ? fmtCurrency.format(n) : `$${n}`);
 export const percent = (n) => (fmtPercent ? fmtPercent.format(n) : `${(n * 100).toFixed(1)}%`);
 
-/** Paint the four headline KPI cards + the total callout. */
+/** Paint the 3 headline KPI boxes + the total callout. */
 export function paintKpis(results) {
   const m = results.metrics;
   setText('kpi-netRevenue', money(m.netRevenue));
   setText('kpi-partnerPayout', money(m.partnerPayout));
-  setText('kpi-blendedRate', `blended ${percent(m.blendedRate)}`);
+  setText('kpi-blendedRate', `blended ${percent(m.blendedRate)} rev-share`);
   setText('kpi-marketingValue', money(m.marketingValue));
   setText('kpi-totalValue', money(m.totalValue));
   setText('total-callout-value', money(m.totalValue));
+  // Paying Customers box + subjective exposure callout
+  setText('kpi-payingCustomers', (m.payingCustomers ?? 0).toLocaleString());
+  setText('kpi-exposure', `${(m.exposureViews ?? 0).toLocaleString()}+ impressions reached`);
+}
+
+/** Subjective "X customers / X views / X reviews" callouts in the Marketing section. */
+export function paintValueCallouts(results) {
+  const host = document.getElementById('value-callouts');
+  if (!host) return;
+  const m = results.metrics;
+  const n = (x) => (x ?? 0).toLocaleString();
+  host.innerHTML = `
+    <div class="value-callout"><b>${n(m.payingCustomers)}</b><span>new paying customers</span></div>
+    <div class="value-callout"><b>${n(m.exposureViews)}+</b><span>brand impressions reached</span></div>
+    <div class="value-callout"><b>${n(m.payingCustomers)}</b><span>potential 5-star reviews</span></div>`;
 }
 
 /** Render the Cost Recovery summary: net cash to partner + coverage narrative. */
@@ -73,19 +88,65 @@ export function paintAssumptions(benchmarks) {
 }
 
 /**
- * Wire form fields, preset selector, and buttons. Calls onChange (debounced) on input.
- *  - schema: input-schema.json (for defaults + validation messages)
- *  - handlers: { onChange, onPreset, onReset }
+ * Wire form via event delegation so dynamically-rendered tier inputs + marketing
+ * toggles are covered without re-binding. handlers: { onChange, onReset, onTierCount }.
  */
 export function bindInputs(schema, handlers, debounceMs = 250) {
   const form = document.getElementById('bva-form');
   if (!form) { console.warn('[BVA] #bva-form not found — inputs not bound'); return; }
   const debounced = debounce(handlers.onChange, debounceMs);
-  form.querySelectorAll('[data-field]').forEach((el) => {
-    el.addEventListener('input', debounced);
-  });
+  form.addEventListener('input', debounced);
+  form.addEventListener('change', debounced);
+  document.getElementById('tier-count')?.addEventListener('change', handlers.onTierCount);
   document.getElementById('btn-calculate')?.addEventListener('click', handlers.onChange);
   document.getElementById('btn-reset')?.addEventListener('click', handlers.onReset);
+}
+
+/** Render N horizontal tier columns (AppSumo-style: header → price → units). */
+export function renderTierTable(tierCount) {
+  const host = document.getElementById('tier-table');
+  if (!host) return;
+  const n = Math.max(1, Math.min(5, Number(tierCount) || 3));
+  host.style.setProperty('--tier-cols', n);
+  let html = '';
+  for (let i = 1; i <= n; i++) {
+    html += `
+      <div class="tier-col">
+        <div class="tier-col__head">Tier ${i}</div>
+        <label class="tier-col__field">Price ($)
+          <input type="number" data-field="tier${i}Price" min="0" step="0.01" inputmode="decimal" />
+        </label>
+        <label class="tier-col__field">Units
+          <input type="number" data-field="tier${i}Units" min="0" step="1" inputmode="numeric" />
+        </label>
+      </div>`;
+  }
+  host.innerHTML = html;
+}
+
+/** Read current tier-table input values (to preserve across a re-render). */
+export function readTierValues() {
+  const out = {};
+  document.querySelectorAll('#tier-table [data-field]').forEach((el) => { out[el.getAttribute('data-field')] = el.value; });
+  return out;
+}
+
+/** Render marketing channel toggles. `enabled` is a { key: bool } map. */
+export function renderMarketingToggles(channelDefs, enabled = {}) {
+  const host = document.getElementById('marketing-toggles');
+  if (!host) return;
+  host.innerHTML = Object.entries(channelDefs).map(([key, c]) => `
+    <label class="mkt-toggle">
+      <input type="checkbox" class="mkt-check" data-mkt="${key}" ${enabled[key] !== false ? 'checked' : ''} />
+      <span>${c.label}</span>
+    </label>`).join('');
+}
+
+/** Read marketing toggle state → { key: bool } for the calc engine. */
+export function readMarketing() {
+  const out = {};
+  document.querySelectorAll('.mkt-check').forEach((el) => { out[el.getAttribute('data-mkt')] = el.checked; });
+  return out;
 }
 
 /** Populate input fields from a flat values map (presets / schema defaults). */

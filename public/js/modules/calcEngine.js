@@ -13,17 +13,22 @@
 //   comparisons: { revenueWaterfall, payoutTiers, marketingChannels, totalValueStack },
 // }
 
+// Assumed share of buyers (blended across all tiers) that remain active and
+// consume credits. Derived — not a user input.
+const ACTIVATION_RATE = 0.40;
+
 export function assess(inputs, benchmarks, config = {}) {
   const horizon = config.costHorizonMonths || 12;
 
-  // Total paying customers = units across all license tiers. Drives the
-  // Verified Reviews valuation so it scales with the calculator inputs.
-  const totalCustomers = (inputs.tier1Units || 0) + (inputs.tier2Units || 0) + (inputs.tier3Units || 0);
+  const revenue = computeRevenue(inputs);              // sums active tiers (1..tierCount)
+  // Paying Customers = units sold minus refunds, rounded to whole people.
+  const payingCustomers = Math.round(revenue.totalUnits * (1 - (inputs.refundRate || 0)));
+  // Active users (credit-consuming) = 40% of total units sold across all tiers.
+  const activeUsers = Math.round(revenue.totalUnits * ACTIVATION_RATE);
 
-  const revenue = computeRevenue(inputs);
   const payout  = computeTieredPayout(revenue.netRevenue, benchmarks.revShareTiers);
-  const market  = computeMarketingValue(benchmarks.marketingChannels, totalCustomers);
-  const cost    = computeCostCurve(inputs, benchmarks.credits, horizon);
+  const market  = computeMarketingValue(benchmarks.marketingChannels, payingCustomers, inputs.marketing, revenue.netRevenue);
+  const cost    = computeCostCurve({ ...inputs, activeUsers }, benchmarks.credits, horizon);
 
   const totalValue = round2(payout.partnerPayout + market.marketingValue);
 
@@ -38,7 +43,12 @@ export function assess(inputs, benchmarks, config = {}) {
 
   return {
     metrics: {
-      totalCustomers,
+      totalUnits:       revenue.totalUnits,
+      payingCustomers,
+      totalCustomers:   payingCustomers,        // alias for channel-card {customers} copy
+      exposureViews:    market.exposureViews,   // subjective "X more views!" callout
+      activeUsers,
+      activationRate:   ACTIVATION_RATE,
       grossRevenue:     revenue.grossRevenue,
       refundAmount:     revenue.refundAmount,
       netRevenue:       revenue.netRevenue,
@@ -68,16 +78,21 @@ export function assess(inputs, benchmarks, config = {}) {
   };
 }
 
-// --- Revenue: per-license-tier gross - refunds = net -------------------------
-// Gross = sum of (units × price) across the three license tiers. One shared
-// refund rate applies to the blended gross.
-export function computeRevenue({ tier1Units, tier1Price, tier2Units, tier2Price, tier3Units, tier3Price, refundRate }) {
-  const grossRevenue = round2(
-    tier1Units * tier1Price + tier2Units * tier2Price + tier3Units * tier3Price
-  );
-  const refundAmount = round2(grossRevenue * refundRate);
+// --- Revenue: sum of active license tiers, minus refunds ---------------------
+// Sums (units × price) across tiers 1..tierCount (1–5). One shared refund rate.
+export function computeRevenue(inputs) {
+  const n = Math.max(1, Math.min(5, inputs.tierCount || 3));
+  let grossRevenue = 0, totalUnits = 0;
+  for (let i = 1; i <= n; i++) {
+    const u = inputs['tier' + i + 'Units'] || 0;
+    const p = inputs['tier' + i + 'Price'] || 0;
+    grossRevenue += u * p;
+    totalUnits += u;
+  }
+  grossRevenue = round2(grossRevenue);
+  const refundAmount = round2(grossRevenue * (inputs.refundRate || 0));
   const netRevenue   = round2(grossRevenue - refundAmount);
-  return { grossRevenue, refundAmount, netRevenue };
+  return { grossRevenue, refundAmount, netRevenue, totalUnits };
 }
 
 // --- Stepped rev-share over net revenue ---------------------------------------
@@ -96,22 +111,31 @@ export function computeTieredPayout(netRevenue, tiers) {
   return { partnerPayout, blendedRate, tiers: out };
 }
 
-// --- Marketing value: per-channel valuations ---------------------------------
-// Most channels use a fixed defaultValue. Verified Reviews scales with the live
-// customer count: value = totalCustomers × ratePerReview (e.g. 500 × $35 = $17,500;
-// at 1,500 customers it equals the original $52,500).
-export function computeMarketingValue(channelDefs, totalCustomers = 0) {
+// --- Marketing value: per-channel valuations (toggleable) --------------------
+// `enabled` is an optional map { channelKey: bool }; null/undefined ⇒ all on.
+// Disabled channels are excluded from value, charts, and exposure. Verified
+// Reviews scales with payingCustomers × ratePerReview. Channels with
+// pctOfNetRevenue scale with deal size, clamped to [minValue, maxValue]
+// (directional-upside ranges from marketing). Others use flat defaultValue.
+// exposureViews sums the audience reach of enabled channels.
+export function computeMarketingValue(channelDefs, payingCustomers = 0, enabled = null, netRevenue = 0) {
+  const isOn = (key) => !enabled || enabled[key] !== false;
+  let exposureViews = 0;
   const channels = Object.entries(channelDefs)
+    .filter(([key]) => isOn(key))
     .map(([key, c]) => {
+      exposureViews += (c.reach || c.sumolings || 0);
       const value = key === 'verifiedReviews'
-        ? round2(totalCustomers * (c.ratePerReview ?? 35))
-        : c.defaultValue;
+        ? round2(payingCustomers * (c.ratePerReview ?? 35))
+        : c.pctOfNetRevenue != null
+          ? round2(clamp(netRevenue * c.pctOfNetRevenue, c.minValue ?? 0, c.maxValue ?? Infinity))
+          : c.defaultValue;
       return { key, label: c.label, value };
     })
     .sort((a, b) => b.value - a.value);
   const marketingValue = round2(channels.reduce((s, c) => s + c.value, 0));
   const mix = channels.map((c) => ({ ...c, pct: marketingValue ? c.value / marketingValue : 0 }));
-  return { marketingValue, channels, mix };
+  return { marketingValue, channels, mix, exposureViews };
 }
 
 // --- Credit cost curve: upfront + monthly geometric decline to -declineByM12 --
@@ -167,3 +191,4 @@ function buildValueStack(payout, market) {
 }
 
 function round2(n) { return Math.round((n + Number.EPSILON) * 100) / 100; }
+function clamp(n, lo, hi) { return Math.min(hi, Math.max(lo, n)); }

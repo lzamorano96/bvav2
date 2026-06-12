@@ -10,6 +10,13 @@ import { initExport, decodeStateFromUrl, decodePartnerFromUrl, clearUrl } from '
 
 const state = { config: null, benchmarks: null, schema: null, inputs: null, results: null };
 
+/** Default marketing toggle state: everything on except channels flagged _placeholder. */
+function defaultEnabled() {
+  const out = {};
+  for (const [key, c] of Object.entries(state.benchmarks.marketingChannels)) out[key] = !c._placeholder;
+  return out;
+}
+
 async function bootstrap() {
   try {
     Object.assign(state, await loadData());   // {config, benchmarks, schema}
@@ -20,11 +27,13 @@ async function bootstrap() {
   }
 
   ui.initFormat(state.config);
-  ui.paintAssumptions(state.benchmarks);
+  ui.renderMarketingToggles(state.benchmarks.marketingChannels, defaultEnabled());
+  ui.renderTierTable(3);   // initial columns; values filled by applyDefaults / URL restore
 
   ui.bindInputs(state.schema, {
     onChange: recalc,
     onReset: () => applyDefaults(),
+    onTierCount: () => changeTierCount(),
   });
 
   initExport(() => state);
@@ -33,32 +42,40 @@ async function bootstrap() {
   const partner = decodePartnerFromUrl();
   if (partner) document.getElementById('partner-input').value = partner;
 
-  // Restore from a shared URL if present; otherwise open on the default scenario.
+  // Restore from a shared URL if present; otherwise open on defaults.
   const fromUrl = decodeStateFromUrl();
   if (fromUrl) {
+    if (fromUrl.tierCount) ui.renderTierTable(fromUrl.tierCount);
     ui.fillInputs(fromUrl);
     recalc();
   } else {
     applyDefaults();
   }
-  console.info('[BVA] M7 ready (polish).');
+  console.info('[BVA] V2 ready.');
 }
 
-/** Read DOM -> validate -> calc -> paint. Charts wired at M4. */
+/** Read DOM -> validate -> calc -> paint. */
 function recalc() {
   const { inputs, errors } = readInputs(state.schema);
-  const hasErrors = ui.showErrors(errors);
-  if (hasErrors) return;
+  if (ui.showErrors(errors)) return;
 
+  inputs.marketing = ui.readMarketing();   // merge channel-toggle state
   state.inputs = inputs;
   state.results = assess(inputs, state.benchmarks, state.config);
   ui.paintKpis(state.results);
+  ui.paintValueCallouts(state.results);
   ui.paintCostRecovery(state.results);
   ui.paintChannelCards(state.results, state.benchmarks);
   renderAll(state.results);
-  // Note: the URL is NOT auto-synced on every change — a plain refresh of the
-  // bare URL returns to defaults. Shareable links are produced on demand via
-  // the Export → "Copy shareable link" button (encodeStateToUrl).
+}
+
+/** Tier-count dropdown changed: re-render columns, preserve entered values, recalc. */
+function changeTierCount() {
+  const tc = Number(document.getElementById('tier-count').value) || 3;
+  const preserved = ui.readTierValues();   // keep existing tier inputs
+  ui.renderTierTable(tc);
+  ui.fillInputs(preserved);                  // new columns stay empty → default 0
+  recalc();
 }
 
 function applyDefaults() {
@@ -66,7 +83,9 @@ function applyDefaults() {
   for (const [k, rule] of Object.entries(state.schema.fields)) {
     if (rule.default !== undefined) defaults[k] = rule.default;
   }
-  clearUrl();          // drop any shared-scenario hash so Reset truly resets
+  clearUrl();                                // drop any shared-scenario hash
+  ui.renderTierTable(defaults.tierCount || 3);
+  ui.renderMarketingToggles(state.benchmarks.marketingChannels, defaultEnabled());
   ui.fillInputs(defaults);
   recalc();
 }
