@@ -1,5 +1,5 @@
 {
-  "_comment": "V2 field definitions + validation rules. Up to 5 license tiers; tierCount controls how many are active/rendered. Tiers above tierCount default to 0 and are excluded from revenue.",
+  "_comment": "V2 field definitions + validation rules. Up to 5 license tiers; tierCount controls how many are active/rendered. Tiers above tierCount keep example defaults (units halve, price ~doubles) but are excluded from revenue until activated.",
   "fields": {
     "tierCount":     { "type": "integer", "min": 1, "max": 5, "required": true, "default": 3 },
 
@@ -9,10 +9,10 @@
     "tier2Price":    { "type": "number",  "min": 0, "required": true, "default": 139 },
     "tier3Units":    { "type": "integer", "min": 0, "required": true, "default": 100 },
     "tier3Price":    { "type": "number",  "min": 0, "required": true, "default": 279 },
-    "tier4Units":    { "type": "integer", "min": 0, "required": true, "default": 0 },
-    "tier4Price":    { "type": "number",  "min": 0, "required": true, "default": 0 },
-    "tier5Units":    { "type": "integer", "min": 0, "required": true, "default": 0 },
-    "tier5Price":    { "type": "number",  "min": 0, "required": true, "default": 0 },
+    "tier4Units":    { "type": "integer", "min": 0, "required": true, "default": 50 },
+    "tier4Price":    { "type": "number",  "min": 0, "required": true, "default": 549 },
+    "tier5Units":    { "type": "integer", "min": 0, "required": true, "default": 25 },
+    "tier5Price":    { "type": "number",  "min": 0, "required": true, "default": 1099 },
 
     "refundRate":    { "type": "percent", "min": 0, "max": 1, "required": true, "default": 0.15 },
     "costPerCredit": { "type": "number",  "min": 0, "required": true, "default": 0.04 },

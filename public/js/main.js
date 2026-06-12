@@ -74,7 +74,14 @@ function changeTierCount() {
   const tc = Number(document.getElementById('tier-count').value) || 3;
   const preserved = ui.readTierValues();   // keep existing tier inputs
   ui.renderTierTable(tc);
-  ui.fillInputs(preserved);                  // new columns stay empty → default 0
+  // Seed every column with schema defaults so newly-revealed tiers aren't empty,
+  // then overlay whatever the user had already entered (typed values win).
+  const tierDefaults = {};
+  for (const [k, rule] of Object.entries(state.schema.fields)) {
+    if (/^tier\d/.test(k) && rule.default !== undefined) tierDefaults[k] = rule.default;
+  }
+  ui.fillInputs(tierDefaults);
+  for (const [k, v] of Object.entries(preserved)) if (v !== '') ui.fillInputs({ [k]: v });
   recalc();
 }
 
