@@ -5,11 +5,12 @@
 // Does NOT mutate calculation logic. Chart pixels come from chartRenderer only.
 
 import { snapshot, captureHiRes } from './chartRenderer.js';
+import { PARTNER_FIELDS, isPartnerView, revenueCostRows } from './viewFields.js';
 
-const FIELDS = ['tierCount',
-                'tier1Units', 'tier1Price', 'tier2Units', 'tier2Price', 'tier3Units', 'tier3Price',
-                'tier4Units', 'tier4Price', 'tier5Units', 'tier5Price',
-                'refundRate', 'activeUsers', 'costPerCredit', 'upfrontCredits', 'monthlyCredits'];
+// SECURITY: the share-link encoder and the partner PDF must NEVER emit internal
+// economics (the credit cost basis). The partner-safe field list + the view-aware
+// PDF row builder live in viewFields.js (pure, unit-tested). This module only
+// iterates PARTNER_FIELDS; it has no reference to the internal-only fields.
 
 const CHART_FILES = [
   ['chart-waterfall', 'revenue-waterfall'], ['chart-payout-tiers', 'payout-tiers'],
@@ -79,7 +80,7 @@ function ensurePdfLibs() {
 }
 
 /** Build the jsPDF document for the current scenario. Exported for testing. */
-export async function buildPdfDoc(state) {
+export async function buildPdfDoc(state, viewMode = 'partner') {
   await ensurePdfLibs();
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ unit: 'pt', format: 'letter', compress: true });
@@ -128,21 +129,18 @@ export async function buildPdfDoc(state) {
     await new Promise(requestAnimationFrame);   // yield: keep main-thread tasks short
   };
 
-  // ACT 1 — Revenue & Cost
-  heading('Revenue & Cost');
+  // ACT 1 — Revenue (+ Cost, internal only)
+  heading(isPartnerView(viewMode) ? 'Revenue' : 'Revenue & Cost');
   doc.autoTable({
     startY: y, margin: { left: M, right: M }, theme: 'plain',
-    body: [
-      ['Gross revenue', usd(m.grossRevenue)], ['Less refunds', '−' + usd(m.refundAmount)],
-      ['Net revenue', usd(m.netRevenue)], ['Partner payout (blended ' + (m.blendedRate*100).toFixed(1) + '%)', usd(m.partnerPayout)],
-      ['Net cash to partner (after 12-mo costs)', usd(m.netCashToPartner)],
-    ],
+    body: revenueCostRows(m, viewMode, usd),   // net-cash row is internal-only
     styles: { font: FONT, fontSize: 9, textColor: C.midnight }, columnStyles: { 1: { halign: 'right' } },
   });
   y = doc.lastAutoTable.finalY + 14;
   await placeChart('chart-waterfall', 'Revenue Breakdown');
   await placeChart('chart-payout-tiers', 'Tiered Rev-Share Payout');
-  await placeChart('chart-cost-over-time', 'Credit Cost Over 12 Months');
+  // Credit-cost curve exposes internal economics — partner PDF omits it entirely.
+  if (!isPartnerView(viewMode)) await placeChart('chart-cost-over-time', 'Credit Cost Over 12 Months');
 
   // ACT 2 — Marketing Value
   heading('Marketing Value');
@@ -174,8 +172,8 @@ export async function buildPdfDoc(state) {
 }
 
 /** Build + download the PDF. */
-export async function exportPdf(state) {
-  const doc = await buildPdfDoc(state);
+export async function exportPdf(state, viewMode = 'partner') {
+  const doc = await buildPdfDoc(state, viewMode);
   const partner = (document.getElementById('partner-input')?.value || 'partner').trim();
   doc.save(`BVA-${(partner || 'partner').replace(/\W+/g, '-')}.pdf`);
 }
@@ -183,7 +181,9 @@ export async function exportPdf(state) {
 // ── Shareable URL ────────────────────────────────────────────────────────────
 export function encodeStateToUrl(inputs) {
   const p = new URLSearchParams();
-  FIELDS.forEach((k) => { if (inputs && inputs[k] != null) p.set(k, inputs[k]); });
+  // PARTNER_FIELDS ONLY — this encoder must be structurally incapable of emitting
+  // internal economics. Do not switch this back to a combined field list.
+  PARTNER_FIELDS.forEach((k) => { if (inputs && inputs[k] != null) p.set(k, inputs[k]); });
   const partner = document.getElementById('partner-input')?.value.trim();
   if (partner) p.set('partner', partner);
   return `${location.origin}${location.pathname}#${p.toString()}`;
@@ -199,7 +199,9 @@ export function decodeStateFromUrl() {
   const p = new URLSearchParams(hash);
   const out = {};
   let any = false;
-  FIELDS.forEach((k) => {
+  // PARTNER_FIELDS only — any INTERNAL_FIELDS key in a legacy/leaky hash is ignored
+  // (cost assumptions then fall back to schema defaults in validate()).
+  PARTNER_FIELDS.forEach((k) => {
     const v = p.get(k);
     if (v == null || v === '') return;
     const n = Number(v);
