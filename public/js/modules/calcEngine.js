@@ -26,9 +26,17 @@ export function assess(inputs, benchmarks, config = {}) {
   // Active users (credit-consuming) = 40% of total units sold across all tiers.
   const activeUsers = Math.round(revenue.totalUnits * ACTIVATION_RATE);
 
+  // INTERNAL view models credits PER TIER (each tier its own allotment). The partner /
+  // default view keeps the simpler blended model, so its outputs stay byte-identical to
+  // before this change. (Phase 2 wires viewMode='internal' + the per-tier UI; until then
+  // the per-tier path is dormant — nothing in the live app passes config.viewMode.)
+  const internal = config.viewMode === 'internal';
+
   const payout  = computeTieredPayout(revenue.netRevenue, benchmarks.revShareTiers);
   const market  = computeMarketingValue(benchmarks.marketingChannels, payingCustomers, inputs.marketing, revenue.netRevenue);
-  const cost    = computeCostCurve({ ...inputs, activeUsers }, benchmarks.credits, horizon);
+  const cost    = internal
+    ? computeCostCurve({ tierCredits: buildTierCredits(inputs), costPerCredit: inputs.costPerCredit }, benchmarks.credits, horizon)
+    : computeCostCurve({ activeUsers, upfrontCredits: inputs.upfrontCredits, monthlyCredits: inputs.monthlyCredits, costPerCredit: inputs.costPerCredit }, benchmarks.credits, horizon);
 
   const totalValue = round2(payout.partnerPayout + market.marketingValue);
 
@@ -68,6 +76,8 @@ export function assess(inputs, benchmarks, config = {}) {
       costOverTime: cost.series,
       costUsage: { aggressive: cost.usageAggressive, conservative: cost.usageConservative },
       marketingMix: market.mix,
+      // Per-tier credit-cost breakdown is INTERNAL-ONLY — never built in partner/default view.
+      ...(internal ? { creditCostByTier: cost.byTier } : {}),
     },
     comparisons: {
       revenueWaterfall: buildWaterfall(revenue, payout),
@@ -139,10 +149,26 @@ export function computeMarketingValue(channelDefs, payingCustomers = 0, enabled 
 }
 
 // --- Credit cost curve: upfront + monthly geometric decline to -declineByM12 --
-export function computeCostCurve({ activeUsers, upfrontCredits, monthlyCredits, costPerCredit }, credits, horizon) {
-  const upfrontCost     = round2(activeUsers * upfrontCredits * costPerCredit);
+// Accepts EITHER a per-tier shape { tierCredits:[{tier,activeUsers,monthlyCredits,upfrontCredits}], costPerCredit }
+// OR the legacy scalar shape { activeUsers, monthlyCredits, upfrontCredits, costPerCredit }. The scalar form is
+// normalized to a single tier, so legacy/partner callers get byte-identical output (round2 is idempotent, so
+// rounding per-tier then summing one tier == rounding once). upfront/peak costs are tier-sums; the geometric
+// decay + usage-scenario series math is unchanged and runs on the summed peak monthly cost.
+export function computeCostCurve(args, credits, horizon) {
+  const costPerCredit = args.costPerCredit || 0;
+  const tiers = Array.isArray(args.tierCredits)
+    ? args.tierCredits
+    : [{ tier: 1, activeUsers: args.activeUsers || 0, monthlyCredits: args.monthlyCredits || 0, upfrontCredits: args.upfrontCredits || 0 }];
+
+  const byTier = tiers.map((t) => ({
+    tier:            t.tier ?? null,
+    activeUsers:     t.activeUsers || 0,
+    upfrontCost:     round2((t.activeUsers || 0) * (t.upfrontCredits || 0) * costPerCredit),
+    peakMonthlyCost: round2((t.activeUsers || 0) * (t.monthlyCredits || 0) * costPerCredit),
+  }));
+  const upfrontCost     = round2(byTier.reduce((s, t) => s + t.upfrontCost, 0));
   // Full monthly allotment (100% usage), month 1 — drives the peak/month-12 figures.
-  const peakMonthlyCost = round2(activeUsers * monthlyCredits * costPerCredit);
+  const peakMonthlyCost = round2(byTier.reduce((s, t) => s + t.peakMonthlyCost, 0));
 
   // Geometric monthly decay so month `horizon` equals peak * (1 - declineByM12).
   const decline = credits.monthlyDeclineByM12 ?? 0;
@@ -170,6 +196,7 @@ export function computeCostCurve({ activeUsers, upfrontCredits, monthlyCredits, 
     usageAggressive: uAgg,
     usageConservative: uCon,
     series,
+    byTier,                                 // per-tier upfront/peak breakdown (internal view)
   };
 }
 
@@ -188,6 +215,58 @@ function buildValueStack(payout, market) {
     { label: 'Partner Payout', value: payout.partnerPayout, key: 'payout' },
     ...market.channels.map((c) => ({ label: c.label, value: c.value, key: c.key })),
   ];
+}
+
+// Build per-tier credit inputs for the INTERNAL cost model. The blended active-user
+// count — round(totalUnits × ACTIVATION_RATE), the SAME integer the partner view uses —
+// is apportioned across tiers by unit share via largest-remainder, so the per-tier
+// active users sum EXACTLY to the blended total. This makes the per-tier cost a faithful
+// decomposition: when every tier shares the global credit rate, internal cost == partner
+// cost. Per-tier credit allotments fall back to the global monthly/upfront figures when a
+// per-tier value is missing or non-numeric.
+function buildTierCredits(inputs) {
+  const n = Math.max(1, Math.min(5, inputs.tierCount || 3));
+  const units = [];
+  let totalUnits = 0;
+  for (let i = 1; i <= n; i++) {
+    const u = inputs['tier' + i + 'Units'] || 0;
+    units.push(u);
+    totalUnits += u;
+  }
+  const blendedActive = Math.round(totalUnits * ACTIVATION_RATE);
+  const active = apportion(blendedActive, units, totalUnits);
+  const out = [];
+  for (let i = 1; i <= n; i++) {
+    out.push({
+      tier: i,
+      activeUsers: active[i - 1],
+      monthlyCredits: numOr(inputs['tier' + i + 'CreditsMonthly'], inputs.monthlyCredits || 0),
+      upfrontCredits: numOr(inputs['tier' + i + 'CreditsUpfront'], inputs.upfrontCredits || 0),
+    });
+  }
+  return out;
+}
+
+// Largest-remainder apportionment: split integer `total` into integer parts proportional
+// to `weights` (which sum to `weightSum`); the parts sum exactly to `total`.
+function apportion(total, weights, weightSum) {
+  if (total <= 0 || weightSum <= 0) return weights.map(() => 0);
+  const ideal = weights.map((w) => (total * w) / weightSum);
+  const out = ideal.map((x) => Math.floor(x));
+  let remainder = total - out.reduce((s, x) => s + x, 0);
+  const byFrac = ideal
+    .map((x, i) => ({ i, frac: x - Math.floor(x) }))
+    .sort((a, b) => b.frac - a.frac);
+  for (let k = 0; k < byFrac.length && remainder > 0; k++) { out[byFrac[k].i] += 1; remainder--; }
+  return out;
+}
+
+// Coerce to a finite number, else fall back. Non-numeric ('abc') falls back too —
+// it must NOT slip through as NaN (which would later be swallowed to 0).
+function numOr(v, fallback) {
+  if (v === undefined || v === null || v === '') return fallback;
+  const num = Number(v);
+  return Number.isFinite(num) ? num : fallback;
 }
 
 function round2(n) { return Math.round((n + Number.EPSILON) * 100) / 100; }

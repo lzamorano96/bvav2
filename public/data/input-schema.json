@@ -1,5 +1,5 @@
 {
-  "_comment": "V2 field definitions + validation rules. Up to 5 license tiers; tierCount controls how many are active/rendered. Tiers above tierCount keep example defaults (units halve, price ~doubles) but are excluded from revenue until activated.",
+  "_comment": "V2 field definitions + validation rules. Up to 5 license tiers; tierCount controls how many are active/rendered. Tiers above tierCount keep example defaults (units halve, price ~doubles) but are excluded from revenue until activated. tierNCreditsMonthly/Upfront are INTERNAL-ONLY (per-tier credit cost model, consumed only when assess() runs with viewMode='internal'); monthlyCredits/upfrontCredits remain the blended fallback used by the partner/default view.",
   "fields": {
     "tierCount":     { "type": "integer", "min": 1, "max": 5, "required": true, "default": 3 },
 
@@ -17,7 +17,18 @@
     "refundRate":    { "type": "percent", "min": 0, "max": 1, "required": true, "default": 0.15 },
     "costPerCredit": { "type": "number",  "min": 0, "required": true, "default": 0.04 },
     "monthlyCredits":{ "type": "integer", "min": 0, "required": true, "default": 100 },
-    "upfrontCredits":{ "type": "integer", "min": 0, "required": true, "default": 0 }
+    "upfrontCredits":{ "type": "integer", "min": 0, "required": true, "default": 0 },
+
+    "tier1CreditsMonthly": { "type": "integer", "min": 0, "required": false, "default": 100 },
+    "tier2CreditsMonthly": { "type": "integer", "min": 0, "required": false, "default": 250 },
+    "tier3CreditsMonthly": { "type": "integer", "min": 0, "required": false, "default": 500 },
+    "tier4CreditsMonthly": { "type": "integer", "min": 0, "required": false, "default": 750 },
+    "tier5CreditsMonthly": { "type": "integer", "min": 0, "required": false, "default": 1000 },
+    "tier1CreditsUpfront": { "type": "integer", "min": 0, "required": false, "default": 0 },
+    "tier2CreditsUpfront": { "type": "integer", "min": 0, "required": false, "default": 0 },
+    "tier3CreditsUpfront": { "type": "integer", "min": 0, "required": false, "default": 0 },
+    "tier4CreditsUpfront": { "type": "integer", "min": 0, "required": false, "default": 0 },
+    "tier5CreditsUpfront": { "type": "integer", "min": 0, "required": false, "default": 0 }
   },
   "note": "Marketing channel toggles + affiliate count are runtime UI state (inputs.marketing), not numeric fields. Rev-share tiers and marketing valuations default from benchmarks.json."
 }
