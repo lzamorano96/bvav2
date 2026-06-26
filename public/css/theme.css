@@ -34,6 +34,13 @@
   --color-negative:       #D7263D;               /* non-palette: no brand red */
   --color-accent:         var(--as-dorado);      /* back-compat alias */
 
+  /* Page backdrop: soft AppSumo-green gradient fading to white. Body only —
+     cards/surfaces keep --color-bg (white) so contrast is unchanged. */
+  --color-bg-gradient: linear-gradient(170deg,
+    color-mix(in srgb, var(--as-dollar) 14%, var(--as-white)) 0%,
+    color-mix(in srgb, var(--as-dollar) 6%,  var(--as-white)) 38%,
+    var(--as-white) 100%);
+
   /* ── Chart series (brand-mapped). Sub-3:1 fills get a Grace stroke ─ */
   --series-1: var(--as-bolt);
   --series-2: var(--as-dorado);

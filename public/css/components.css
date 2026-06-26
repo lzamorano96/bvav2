@@ -1,7 +1,7 @@
 /* components.css — header, KPI cards, inputs, buttons, chart containers,
    channel cards, footer. Implements the approved wireframe styling. */
 
-body { font-family: var(--font-sans); color: var(--color-text); background: var(--color-bg); }
+body { font-family: var(--font-sans); color: var(--color-text); background: var(--color-bg-gradient) fixed; min-height: 100%; }
 
 /* ---- Header (light, per AppSumo.com) ---- */
 .app-header {
